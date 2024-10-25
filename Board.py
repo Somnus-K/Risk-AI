@@ -29,7 +29,7 @@ def write_matrix_to_csv(header, matrix, filename):
         writer.writerows(matrix)
 
 if __name__ == "__main__":
-    filename = 'Board.csv'
+    filename = 'HalfBoard.csv'
     header, matrix = read_csv_to_matrix(filename)
     mirrored_matrix = mirror_diagonal(matrix)
     print_matrix(mirrored_matrix)
