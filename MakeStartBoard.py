@@ -2,7 +2,7 @@ import random
 from pprint import pprint
 
 startTroops = [40,35,30,25,20,15,10,5] # Number of troops each player starts with in a 2,3,4,5,6,7,8,9 player game
-gameState = [[0 for _ in range(2)] for _ in range(42)]
+gameState = [[0 for _ in range(2)] for _ in range(42)] # What is 42?
 numbers = list(range(0, 42))
 
 # Get number of players
