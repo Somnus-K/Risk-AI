@@ -24,3 +24,22 @@ def get_blank_board(num_players, board_ref):
 def increment_turn(num_players, turn):
     return (turn + 1) % num_players
 
+def are_all_available_troops_deployed(players: list):
+    are_they = True
+    for player in players:
+        if player.get_available_troops() > 0:
+            are_they = False
+            break
+    return are_they
+
+def print_board(board: dict):
+    for index, territory in enumerate(board):
+        troop_str = ""
+        player_index = 0
+        for territory_troops in board[territory]:
+            troop_str = f"{troop_str}Player {player_index+1}:\t{territory_troops}|\t"
+            player_index += 1
+            territory_str = f"{index}: {territory}"
+            while len(territory_str) < 20:
+                territory_str = f"{territory_str} "
+        print(f"{territory_str}|\t{troop_str}")
