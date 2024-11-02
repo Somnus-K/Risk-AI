@@ -1,12 +1,16 @@
 import functions as fns
 
 class AIPlayer():
+    """
+        Incredibly Important -> KEEP AI and Human Player Classes in SYNC i.e. matching function signatures!!! 
+        Only way we will be able to keep them interchangeable (Game engine functions treat them both as "Player") 
+    """
     available_troops: int = 0
     board: dict
     board_ref: dict
     player_index: int
     random_troop_deployment: bool
-    def __init__(self, board: dict, board_ref: dict, starting_troops: int, player_index: int, random_troop_deployment) -> None:
+    def __init__(self, board: dict, board_ref: dict, starting_troops: int, player_index: int, random_troop_deployment: bool) -> None:
         self.board = board
         self.board_ref = board_ref
         self.available_troops = starting_troops
@@ -29,6 +33,10 @@ class AIPlayer():
         return self.available_troops
 
 class HumanPlayer():
+    """
+        Incredibly Important -> KEEP AI and Human Player Classes in SYNC i.e. matching function signatures!!! 
+        Only way we will be able to keep them interchangeable (Game engine functions treat them both as "Player") 
+    """
     available_troops: int = 0
     board: dict
     board_ref: dict
