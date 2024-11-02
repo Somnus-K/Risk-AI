@@ -10,19 +10,21 @@ class AIPlayer():
     board_ref: dict
     player_index: int
     random_troop_deployment: bool
+    territory_names: list
     def __init__(self, board: dict, board_ref: dict, starting_troops: int, player_index: int, random_troop_deployment: bool) -> None:
         self.board = board
         self.board_ref = board_ref
         self.available_troops = starting_troops
         self.player_index = player_index
         self.random_troop_deployment = random_troop_deployment
+        self.territory_names = [territory for territory in board]
     
     def place_troop_not_restricted(self, global_board: dict):
         import random
         if self.random_troop_deployment:
-            move = random.choice(range(0, len(self.board)))
-            for index, territory in enumerate(global_board):
-                if index == move:
+            while True:
+                territory = random.choice(self.territory_names)
+                if (fns.is_territory_available(global_board=global_board, territory=territory, player_index=self.player_index)):
                     global_board[territory][self.player_index]+=1
                     break
             self.available_troops-=1
@@ -41,11 +43,14 @@ class HumanPlayer():
     board: dict
     board_ref: dict
     player_index: int
+    territory_names: list
     def __init__(self, board: dict, board_ref: dict, starting_troops: int, player_index: int) -> None:
         self.board = board
         self.board_ref = board_ref
         self.available_troops = starting_troops
         self.player_index = player_index
+        self.territory_names = [territory for territory in board]
+
     def get_input(self):
         response = input("Your Move:\n")
         return response.lower()
@@ -56,11 +61,9 @@ class HumanPlayer():
             fns.print_board(global_board)
             try:
                 move = input(f'Where would you like to place one troop ({self.available_troops} Remaining):\n')
-                territory_index = int(move)
-                for index, territory in enumerate(global_board):
-                    if index == territory_index:
-                        global_board[territory][self.player_index]+=1
-                        break
+                territory = self.territory_names[int(move)]
+                assert fns.is_territory_available(global_board=global_board, territory=territory, player_index=self.player_index), "Invalid Move"
+                global_board[territory][self.player_index]+=1
                 self.available_troops-=1
                 self.board = global_board
                 return global_board
