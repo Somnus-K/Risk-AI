@@ -43,3 +43,21 @@ def print_board(board: dict):
             while len(territory_str) < 20:
                 territory_str = f"{territory_str} "
         print(f"{territory_str}|\t{troop_str}")
+
+def is_territory_available(global_board, territory, player_index):
+    is_it = True
+    for index, troop_count in enumerate(global_board[territory]):
+        if index != player_index:
+            if troop_count > 0:
+                is_it = False
+                break
+    return is_it
+
+def give_player_available_troops(global_board: dict, player_index: int):
+    import math
+    num_territories = 0
+    min_troops = 3
+    for territory in global_board:
+        num_territories += 1 if global_board[territory][player_index] > 0 else 0
+    num_troops = math.floor(num_territories/3)
+    return max(min_troops, num_troops)
