@@ -61,3 +61,70 @@ def give_player_available_troops(global_board: dict, player_index: int):
         num_territories += 1 if global_board[territory][player_index] > 0 else 0
     num_troops = math.floor(num_territories/3)
     return max(min_troops, num_troops)
+
+def get_territory_troops(global_board: dict, territory: str):
+    return global_board[territory]
+
+def there_are_enemy_troops_here(global_board: dict, territory: str, player_index: int):
+    are_there = False
+    for index, troops in enumerate(global_board[territory]):
+        if index != player_index:
+            if troops > 0:
+                are_there = True
+                break
+    return are_there
+                
+def get_my_troops_here(global_board: dict, territory: str, player_index: int):
+    return global_board[territory][player_index]
+
+def get_enemy_troops_here(global_board: dict, territory: str, player_index: int):
+    their_troops = 0
+    their_index = 0
+    for index, troops in enumerate(global_board[territory]):
+        if index != player_index and troops > 0:
+            their_troops = troops
+            their_index = index
+            break
+    return their_index, their_troops
+
+def remove_troops_from_territory(global_board: dict, territory: str, player_index: int, loses: int):
+    global_board[territory][player_index] -= loses
+    if global_board[territory][player_index] < 0:
+        global_board[territory][player_index] = 0
+    return global_board
+
+def add_troops_to_territory(global_board: dict, territory: str, player_index: int, gains: int):
+    global_board[territory][player_index] += gains
+    return global_board
+
+def player_can_attack(global_board: dict, board_ref: dict, player_index: int):
+    # QOL Build Territories list
+    territory_list = get_my_territories(global_board, player_index)
+    attack_options = []
+    for territory in territory_list:
+        # Do i have atleast 2 troops here
+        if get_my_troops_here(global_board, territory, player_index) > 1:
+            # Check if adjacent territories have enemy troops
+            for column_index, neighboring_territory in board_ref[territory]:
+                if there_are_enemy_troops_here(global_board, neighboring_territory, player_index):
+                    attack_options.append((territory, neighboring_territory))
+    return len(attack_options) > 0, attack_options
+
+def player_can_move(global_board: dict, board_ref: dict, player_index: int):
+    # QOL Build Territories list
+    territory_list = get_my_territories(global_board, player_index)
+    movement_options = []
+    for territory in territory_list:
+        if get_my_troops_here(global_board, territory, player_index) > 1:
+            for col, neighboring_territory in board_ref[territory]:
+                if not there_are_enemy_troops_here(global_board, neighboring_territory, player_index):
+                    movement_options.append((territory, neighboring_territory))
+    return len(movement_options) > 0, movement_options
+
+def get_my_territories(global_board: dict, player_index: int):
+    territories = []
+    for territory in global_board:
+        troops = global_board[territory][player_index]
+        if troops > 0:
+            territories.append(territory)
+    return territories
