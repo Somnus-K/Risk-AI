@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
 import numpy as np
 # How do we start the script? We need a way to systematically play the game.
+colors= ['red', 'blue', 'green', 'black']
 num_players = 4
 player_turn = 0
 starting_troop_count = [40,35,30,25,20,15,10,5]
@@ -13,6 +14,9 @@ starting_troop_count = [40,35,30,25,20,15,10,5]
 board_ref = fns.get_board_adj_dict() # Holds the territories and their adjacent territories
 board = fns.get_blank_board(num_players=num_players, board_ref=board_ref)
 board_states = [] # Used for animation
+players_troops_ratio = [] # Statistics
+players_total_territories = [] # Statistics
+players_troop_territory_ratios = []
 
 # Initialize Game State. Players inject troops onto the board. Needs to Happen Systemmatically to allow the AI to make decision in the future?
 num_player_troops = starting_troop_count[num_players-2]
@@ -22,32 +26,35 @@ ai1 = AIPlayer(board=board,
                board_ref=board_ref, 
                starting_troops=num_player_troops, 
                player_index=0, 
-               random_troop_deployment=False,
+               random_troop_deployment=True,
                random_attack=True,
-               random_move=False,
+               random_move=True,
                random_rolls=True,
-               push_frontline=True,
-               aggresive_attack=True)
+               push_frontline=False,
+               aggresive_targeting=False,
+               random_targeting=True)
 ai2 = AIPlayer(board=board, 
                board_ref=board_ref, 
                starting_troops=num_player_troops, 
                player_index=1, 
-               random_troop_deployment=False,
+               random_troop_deployment=True,
                random_attack=True,
-               random_move=False,
+               random_move=True,
                random_rolls=True,
-               push_frontline=True,
-               aggresive_attack=True)
+               push_frontline=False,
+               aggresive_targeting=False,
+               random_targeting=True)
 ai3 = AIPlayer(board=board, 
                board_ref=board_ref, 
                starting_troops=num_player_troops, 
                player_index=2, 
-               random_troop_deployment=False,
+               random_troop_deployment=True,
                random_attack=True,
-               random_move=False,
+               random_move=True,
                random_rolls=True,
-               push_frontline=True,
-               aggresive_attack=True)
+               push_frontline=False,
+               aggresive_targeting=True,
+               random_targeting=False)
 ai4 = AIPlayer(board=board, 
                board_ref=board_ref, 
                starting_troops=num_player_troops, 
@@ -57,13 +64,18 @@ ai4 = AIPlayer(board=board,
                random_move=False,
                random_rolls=True,
                push_frontline=True,
-               aggresive_attack=True)
+               aggresive_targeting=True,
+               random_targeting=False)
 players = [ai1, ai2, ai3, ai4]
 
 # Init board
 board = engine.init_board_place_troops(board=board, board_ref=board_ref, players=players, player_turn=player_turn)
 fns.print_board(board)
+# Save INIT State
 board_states.append(copy.deepcopy(board))
+players_troops_ratio.append(copy.deepcopy(engine.calculate_player_troops(board, len(players))))
+players_total_territories.append(copy.deepcopy(engine.calculate_players_num_territories(board, len(players))))
+players_troop_territory_ratios.append(copy.deepcopy(engine.calculate_players_troop_territory_ratio(board, len(players))))
 
 # Increment Turn?
 player_turn = fns.increment_turn(num_players=len(players), turn=player_turn)
@@ -87,6 +99,10 @@ while not game_over:
         if turn == 1000:
             break
         turn+=1
+        # Calculate Win chances
+        players_troops_ratio.append(copy.deepcopy(engine.calculate_player_troops(board, len(players))))
+        players_total_territories.append(copy.deepcopy(engine.calculate_players_num_territories(board, len(players))))
+        players_troop_territory_ratios.append(copy.deepcopy(engine.calculate_players_troop_territory_ratio(board, len(players))))
     else:
         player_turn = fns.increment_turn(num_players=len(players), turn=player_turn)
 # Print Final Board
@@ -118,7 +134,6 @@ if x.upper() == "Y":
     ax.set_xticklabels(x_labels)
     ax.legend()
     plt.xticks(rotation=45)
-    colors= ['red', 'blue', 'green', 'yellow']
 
     # Update function that takes the current frame index and applies the corresponding snapshot
     def update(frame):
@@ -135,7 +150,54 @@ if x.upper() == "Y":
     ani = FuncAnimation(fig, update, frames=len(board_states), blit=True, interval=100)
     ani.save('game_board_animation.mp4', writer='ffmpeg', dpi=300)
 else:
-    exit(0)
+    pass
+
+fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+# Plot change in chance to win over time
+X = range(0, len(players_troops_ratio))
+ys_win = []
+ys_territory = []
+ys_tt_ratio = []
+# Extract the Y's
+for player_index, player in enumerate(players):
+    y_win_partial = []
+    y_ter_partial = []
+    y_tt_ratio = []
+
+    for player_percentages in players_troops_ratio:
+        y_win_partial.append(player_percentages[player_index])
+
+    for player_territories in players_total_territories:
+        y_ter_partial.append(player_territories[player_index])
+    
+    for player_tt in players_troop_territory_ratios:
+        y_tt_ratio.append(player_tt[player_index])
+
+    ys_win.append(copy.deepcopy(y_win_partial))
+    ys_territory.append(copy.deepcopy(y_ter_partial))
+    ys_tt_ratio.append(copy.deepcopy(y_tt_ratio))
+
+for player_index, y in enumerate(ys_win):
+    axs[0].plot(X,y, color=colors[player_index], label=f"Player {player_index+1}")
+
+for player_index, y in enumerate(ys_territory):
+    axs[1].plot(X,y, color=colors[player_index], label=f"Player {player_index+1}")
+
+for player_index, y in enumerate(ys_tt_ratio):
+    axs[2].plot(X,y, color=colors[player_index], label=f"Player {player_index+1}")
+
+# Add a legend to describe each line
+axs[0].set_xlabel("Turn #")
+axs[0].set_ylabel("# Troops on Board")
+axs[0].set_title("Troops Deployed Timeline")
+axs[1].set_xlabel("Turn #")
+axs[1].set_ylabel("# Territories")
+axs[1].set_title("Territories Conquered Timeline")
+axs[2].set_xlabel("Turn #")
+axs[2].set_ylabel("Troops to Territories")
+axs[2].set_title("Ratio Troops to Territories")
+plt.show()
+
 
 
 
