@@ -6,6 +6,7 @@ class AIPlayer():
         Only way we will be able to keep them interchangeable (Game engine functions treat them both as "Player") 
 
         push_frontline: True => random_move == False, random_troop_deployment == False
+        aggresive_attack: True => random_attack == False
     """
     territory_names: list
     available_troops: int = 0
@@ -17,9 +18,10 @@ class AIPlayer():
     random_move: bool
     random_rolls: bool
     push_frontline: bool
-    aggresive_attack: bool
+    random_targeting: bool
+    aggresive_targeting: bool
 
-    def __init__(self, board: dict, board_ref: dict, starting_troops: int, player_index: int, random_troop_deployment: bool, random_attack: bool, random_move: bool, random_rolls: bool, push_frontline: bool, aggresive_attack: bool) -> None:
+    def __init__(self, board: dict, board_ref: dict, starting_troops: int, player_index: int, random_troop_deployment: bool, random_attack: bool, random_move: bool, random_rolls: bool, push_frontline: bool, aggresive_targeting: bool, random_targeting: bool) -> None:
         self.board = board
         self.board_ref = board_ref
         self.available_troops = starting_troops
@@ -30,7 +32,8 @@ class AIPlayer():
         self.random_move = random_move
         self.territory_names = [territory for territory in board]
         self.push_frontline = push_frontline
-        self.aggresive_attack = aggresive_attack
+        self.random_targeting = random_targeting
+        self.aggresive_targeting = aggresive_targeting
     
     def place_troop_init(self, global_board: dict):
         """
@@ -145,9 +148,9 @@ class AIPlayer():
     
     def pick_target(self, attack_options: list):
         import random
-        if self.random_attack: 
+        if self.random_targeting: 
             return random.choice(attack_options)
-        if self.aggresive_attack:
+        if self.aggresive_targeting:
             # Push frontline with greatest ratio of Troops to enemies 
             max_ratio = 0
             best_move_index = 0
@@ -198,7 +201,7 @@ class AIPlayer():
                         break
                 else:
                     # AI Attack
-                    pass
+                    break
             player_can_move, movement_options = fns.player_can_move(global_board=self.board, board_ref=self.board_ref, player_index=self.player_index)
             player_can_move_fl, movement_options_fl = fns.can_move_to_front_line(global_board=self.board, board_ref=self.board_ref, player_index=self.player_index)
             if self.random_move and player_can_move:
