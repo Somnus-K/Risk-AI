@@ -93,46 +93,49 @@ while not game_over:
 fns.print_board(board)
 
 # ANIMATING / GRAPHING RESULTS __________________________
+x = input("Y: make movie, N: exit\n")
+if x.upper() == "Y":
+    # Extract x labels and number of bars per group
+    x_labels = list(board_states[0].keys())
+    num_groups = len(x_labels)
+    num_bars = len(board_states[0][x_labels[0]])
+    # Set up the figure and axis
+    fig, ax = plt.subplots()
+    x = np.arange(num_groups)  # label locations
+    width = 0.2  # width of each bar
 
-# Extract x labels and number of bars per group
-x_labels = list(board_states[0].keys())
-num_groups = len(x_labels)
-num_bars = len(board_states[0][x_labels[0]])
-# Set up the figure and axis
-fig, ax = plt.subplots()
-x = np.arange(num_groups)  # label locations
-width = 0.2  # width of each bar
+    # Initialize bars and store references in a list
+    bars = []
+    for i in range(num_bars):
+        bar = ax.bar(x + i * width, [board_states[0][group][i] for group in x_labels], width, label=f'Player {i + 1}')
+        bars.append(bar)
 
-# Initialize bars and store references in a list
-bars = []
-for i in range(num_bars):
-    bar = ax.bar(x + i * width, [board_states[0][group][i] for group in x_labels], width, label=f'Player {i + 1}')
-    bars.append(bar)
+    # Add labels and title
+    ax.set_xlabel('Territories')
+    ax.set_ylabel('Troops')
+    ax.set_title('Troop Distribution')
+    ax.set_xticks(x + width * (num_bars - 1) / 2)
+    ax.set_xticklabels(x_labels)
+    ax.legend()
+    plt.xticks(rotation=45)
+    colors= ['red', 'blue', 'green', 'yellow']
 
-# Add labels and title
-ax.set_xlabel('Territories')
-ax.set_ylabel('Troops')
-ax.set_title('Troop Distribution')
-ax.set_xticks(x + width * (num_bars - 1) / 2)
-ax.set_xticklabels(x_labels)
-ax.legend()
-plt.xticks(rotation=45)
-colors= ['red', 'blue', 'green', 'yellow']
+    # Update function that takes the current frame index and applies the corresponding snapshot
+    def update(frame):
+        snapshot = board_states[frame]  # Get the snapshot for the current frame
 
-# Update function that takes the current frame index and applies the corresponding snapshot
-def update(frame):
-    snapshot = board_states[frame]  # Get the snapshot for the current frame
+        # Update each bar's height based on the current snapshot
+        for i, bar_group in enumerate(bars):
+            for j, bar in enumerate(bar_group):
+                bar.set_height(snapshot[x_labels[j]][i])  # Set the height of each bar
 
-    # Update each bar's height based on the current snapshot
-    for i, bar_group in enumerate(bars):
-        for j, bar in enumerate(bar_group):
-            bar.set_height(snapshot[x_labels[j]][i])  # Set the height of each bar
+        return [bar for bar_group in bars for bar in bar_group]
 
-    return [bar for bar_group in bars for bar in bar_group]
-
-# Create the animation, using the number of snapshots as the total frames
-ani = FuncAnimation(fig, update, frames=len(board_states), blit=True, interval=100)
-ani.save('game_board_animation.mp4', writer='ffmpeg', dpi=300)
+    # Create the animation, using the number of snapshots as the total frames
+    ani = FuncAnimation(fig, update, frames=len(board_states), blit=True, interval=100)
+    ani.save('game_board_animation.mp4', writer='ffmpeg', dpi=300)
+else:
+    exit(0)
 
 
 
