@@ -146,7 +146,7 @@ def get_neighboring_open_territories(global_board: dict, board_ref: dict, player
         # Check the boarder territories
         for col_index, neighbor_territory in board_ref[territory]:
             if not there_are_enemy_troops_here(global_board, neighbor_territory, player_index) and not (neighbor_territory in my_territories):
-                frontier.append(territory)
+                frontier.append(neighbor_territory)
     return frontier
 
 def can_move_to_front_line(global_board: dict, board_ref: dict, player_index: int):
@@ -160,11 +160,20 @@ def can_move_to_front_line(global_board: dict, board_ref: dict, player_index: in
                     movement_options.append((territory, neighbor_territory))
     return len(movement_options)>0, movement_options
 
-def get_troop_ratio(global_dict: dict, attack_direction: tuple, player_index: int):
-    my_troops = get_my_troops_here(global_dict, attack_direction[0], player_index)
-    their_troops = get_enemy_troops_here(global_dict, attack_direction[1], player_index)[1]
+def get_troop_ratio(global_board: dict, attack_direction: tuple, player_index: int):
+    my_troops = get_my_troops_here(global_board, attack_direction[0], player_index)
+    their_troops = get_enemy_troops_here(global_board, attack_direction[1], player_index)[1]
     ratio = 0
     if their_troops > 0:
         ratio = my_troops / their_troops
     return ratio
+
+def can_player_play(global_board: dict, player_index: int):
+    """Basically just check if they have troops"""
+    can_they = False
+    for territory in global_board:
+        if global_board[territory][player_index]>0:
+            can_they = True
+            break
+    return can_they
 
