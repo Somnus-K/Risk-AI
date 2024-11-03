@@ -5,8 +5,10 @@ import engine
 from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
 import numpy as np
+from WorldMap import WorldMap
+import networkx as nx
 # How do we start the script? We need a way to systematically play the game.
-colors= ['red', 'blue', 'green', 'black']
+colors= ['red', 'blue', 'green', 'orange']
 num_players = 4
 player_turn = 0
 starting_troop_count = [40,35,30,25,20,15,10,5]
@@ -16,7 +18,7 @@ board = fns.get_blank_board(num_players=num_players, board_ref=board_ref)
 board_states = [] # Used for animation
 players_troops_ratio = [] # Statistics
 players_total_territories = [] # Statistics
-players_troop_territory_ratios = []
+players_troop_territory_ratios = [] # Statistics
 
 # Initialize Game State. Players inject troops onto the board. Needs to Happen Systemmatically to allow the AI to make decision in the future?
 num_player_troops = starting_troop_count[num_players-2]
@@ -71,6 +73,7 @@ players = [ai1, ai2, ai3, ai4]
 # Init board
 board = engine.init_board_place_troops(board=board, board_ref=board_ref, players=players, player_turn=player_turn)
 fns.print_board(board)
+board_map = WorldMap(board, board_ref, colors)
 # Save INIT State
 board_states.append(copy.deepcopy(board))
 players_troops_ratio.append(copy.deepcopy(engine.calculate_player_troops(board, len(players))))
@@ -151,7 +154,26 @@ if x.upper() == "Y":
     ani.save('game_board_animation.mp4', writer='ffmpeg', dpi=300)
 else:
     pass
-
+x = input("Y: make map movie, N: exit\n")
+if x.upper() == "Y": 
+    G = nx.Graph()
+    board_map.build_graph(board_states[0], board_ref, colors)
+    G.add_nodes_from(board_map.nodes)
+    G.add_edges_from(board_map.edges)
+    # Set up figure and layout
+    fig = plt.figure()
+    pos = nx.spring_layout(G, seed=42)
+    plt.title("Risk")
+    
+    def update_graph(frame):
+        board_map.build_graph(board_states[frame], board_ref, colors)
+        plt.clf()
+        nx.draw(G, pos, with_labels=True, node_size=3000, labels=board_map.node_labels, node_color=board_map.node_colors, font_size=8, font_weight="bold", edge_color="gray")
+    
+    ani = FuncAnimation(fig, update_graph, frames=len(board_states), interval=100)
+    plt.show()
+else:
+    pass
 fig, axs = plt.subplots(1, 3, figsize=(15, 5))
 # Plot change in chance to win over time
 X = range(0, len(players_troops_ratio))

@@ -177,3 +177,19 @@ def can_player_play(global_board: dict, player_index: int):
             break
     return can_they
 
+def get_player_here(global_board: dict, territory: str):
+    index = -1
+    for player_index, troops in enumerate(global_board[territory]):
+        if troops > 0:
+            index = player_index
+            break
+    return index
+
+def get_troops_here(global_board: dict, territory: str):
+    troops = 0
+    for player_index, troops in enumerate(global_board[territory]):
+        if troops > 0:
+            troops = troops
+            break
+    return troops
+
