@@ -128,3 +128,43 @@ def get_my_territories(global_board: dict, player_index: int):
         if troops > 0:
             territories.append(territory)
     return territories
+
+def get_the_territories_on_the_front_line(global_board: dict, board_ref: dict, player_index: int):
+    my_territories = get_my_territories(global_board, player_index)
+    front_line = []
+    for territory in my_territories:
+        # Check the boarder territories
+        for col_index, neighbor_territory in board_ref[territory]:
+            if there_are_enemy_troops_here(global_board, neighbor_territory, player_index):
+                front_line.append(territory)
+    return front_line
+
+def get_neighboring_open_territories(global_board: dict, board_ref: dict, player_index: int): 
+    my_territories = get_my_territories(global_board, player_index)
+    frontier = []
+    for territory in my_territories:
+        # Check the boarder territories
+        for col_index, neighbor_territory in board_ref[territory]:
+            if not there_are_enemy_troops_here(global_board, neighbor_territory, player_index) and not (neighbor_territory in my_territories):
+                frontier.append(territory)
+    return frontier
+
+def can_move_to_front_line(global_board: dict, board_ref: dict, player_index: int):
+    my_territories = get_my_territories(global_board, player_index)
+    front_line = get_the_territories_on_the_front_line(global_board, board_ref, player_index)
+    movement_options = []
+    for territory in my_territories:
+        if get_my_troops_here(global_board, territory, player_index) > 1:
+            for col_index, neighbor_territory in board_ref[territory]:
+                if neighbor_territory in front_line:
+                    movement_options.append((territory, neighbor_territory))
+    return len(movement_options)>0, movement_options
+
+def get_troop_ratio(global_dict: dict, attack_direction: tuple, player_index: int):
+    my_troops = get_my_troops_here(global_dict, attack_direction[0], player_index)
+    their_troops = get_enemy_troops_here(global_dict, attack_direction[1], player_index)[1]
+    ratio = 0
+    if their_troops > 0:
+        ratio = my_troops / their_troops
+    return ratio
+
