@@ -128,3 +128,27 @@ def get_my_territories(global_board: dict, player_index: int):
         if troops > 0:
             territories.append(territory)
     return territories
+
+def get_the_territories_on_the_front_line(global_board: dict, board_ref: dict, player_index: int):
+    my_territories = get_my_territories(global_board, player_index)
+    front_line = []
+    for territory in my_territories:
+        # Check the boarder territories
+        for col_index, neighbor_territory in board_ref[territory]:
+            if there_are_enemy_troops_here(global_board, neighbor_territory, player_index):
+                front_line.append(territory)
+    return front_line
+
+def can_move_to_front_line(global_board: dict, board_ref: dict, player_index: int):
+    my_territories = get_my_territories(global_board, player_index)
+    front_line = get_the_territories_on_the_front_line(global_board, board_ref, player_index)
+    movement_options = []
+    for territory in my_territories:
+        for col_index, neighbor_territory in board_ref[territory]:
+            if neighbor_territory in front_line:
+                movement_options.append((territory, neighbor_territory))
+    return len(movement_options)>0, movement_options
+
+def graph_board_state(global_board: dict):
+    pass
+

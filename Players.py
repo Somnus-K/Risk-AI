@@ -4,6 +4,8 @@ class AIPlayer():
     """
         Incredibly Important -> KEEP AI and Human Player Classes in SYNC i.e. matching function signatures!!! 
         Only way we will be able to keep them interchangeable (Game engine functions treat them both as "Player") 
+
+        push_frontline: True => random_move == False, 
     """
     territory_names: list
     available_troops: int = 0
@@ -12,9 +14,11 @@ class AIPlayer():
     player_index: int
     random_troop_deployment: bool
     random_attack: bool
+    random_move: bool
     random_rolls: bool
+    push_frontline: bool
 
-    def __init__(self, board: dict, board_ref: dict, starting_troops: int, player_index: int, random_troop_deployment: bool, random_attack: bool, random_move: bool, random_rolls: bool) -> None:
+    def __init__(self, board: dict, board_ref: dict, starting_troops: int, player_index: int, random_troop_deployment: bool, random_attack: bool, random_move: bool, random_rolls: bool, push_frontline: bool) -> None:
         self.board = board
         self.board_ref = board_ref
         self.available_troops = starting_troops
@@ -24,6 +28,7 @@ class AIPlayer():
         self.random_rolls = random_rolls
         self.random_move = random_move
         self.territory_names = [territory for territory in board]
+        self.push_frontline = push_frontline
     
     def place_troop_not_restricted(self, global_board: dict):
         import random
@@ -36,6 +41,12 @@ class AIPlayer():
             self.available_troops-=1
             self.board = global_board
             return global_board 
+        elif self.push_frontline:
+            front_line = fns.get_the_territories_on_the_front_line(self.board, self.board_ref, self.player_index)
+            territory = random.choice(front_line)
+            self.board[territory][self.player_index]+=1
+            self.available_troops-=1
+            return self.board
     
     def get_available_troops(self):
         return self.available_troops
@@ -92,6 +103,10 @@ class AIPlayer():
         if self.random_move:
             sent_troops = random.choice([i for i in range(1, self.board[from_territory][self.player_index])])
             self.board = fns.add_troops_to_territory(self.board, to_territory, self.player_index, sent_troops)
+        elif self.push_frontline:
+            # Aggressively push the front line
+            sent_troops = self.board[from_territory][self.player_index] - 1
+            self.board = fns.add_troops_to_territory(self.board, to_territory, self.player_index, sent_troops)
         pass
     
     def pick_target(self, attack_options: list):
@@ -102,7 +117,9 @@ class AIPlayer():
     def pick_move(self, movement_options: list):
         import random
         if self.random_move: 
-            return random.choice(movement_options) 
+            return random.choice(movement_options)
+        elif self.push_frontline:
+            return random.choice(movement_options)
 
     def play(self, global_board: dict, players):
         import random
@@ -110,9 +127,8 @@ class AIPlayer():
         self.available_troops = fns.give_player_available_troops(global_board=self.board, player_index=self.player_index)
         # Place Troops
         self.board = self.place_troop_not_restricted(global_board=self.board) # Sync boards
-        # TODO: Rethink this logic... attacking and moving should happen in any order
+        
         playing = True
-        free_move_taken = False
         while playing:
             # Attack or stay idle
             player_can_attack, attack_options = fns.player_can_attack(global_board=self.board, board_ref=self.board_ref, player_index=self.player_index)
@@ -131,21 +147,24 @@ class AIPlayer():
                     # AI Attack
                     pass
             player_can_move, movement_options = fns.player_can_move(global_board=self.board, board_ref=self.board_ref, player_index=self.player_index)
-            while player_can_move and not free_move_taken:
-                if self.random_move:
-                    # Coin Toss
-                    if random.choice([0,1]) == 1:
-                        # Move 
-                        target = self.pick_move(movement_options)
-                        self.move(target)
-                        free_move_taken = True
-                        player_can_move, movement_options = fns.player_can_move(global_board=self.board, board_ref=self.board_ref, player_index=self.player_index)
-                    else:
-                        break
-                else:
-                    # AI Move
-                    pass
-            playing = random.choice([0,1]) == 1
+            player_can_move_fl, movement_options_fl = fns.can_move_to_front_line(global_board=self.board, board_ref=self.board_ref, player_index=self.player_index)
+            if self.random_move and player_can_move:
+                # Coin Toss
+                if random.choice([0,1]) == 1:
+                    # Move 
+                    target = self.pick_move(movement_options)
+                    self.move(target)
+                    player_can_move, movement_options = fns.player_can_move(global_board=self.board, board_ref=self.board_ref, player_index=self.player_index)
+            elif self.push_frontline and player_can_move_fl:
+                # ALWAYS fortify in this mode
+                # Move 
+                target = self.pick_move(movement_options_fl)
+                self.move(target)
+            else:
+                # AI Move
+                pass
+            # Player can only attack and then optionally fortify
+            playing = False
 
         # Upgrade Troops?
         # End Turn?
