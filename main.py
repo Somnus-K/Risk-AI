@@ -22,20 +22,22 @@ ai1 = AIPlayer(board=board,
                board_ref=board_ref, 
                starting_troops=num_player_troops, 
                player_index=0, 
-               random_troop_deployment=True,
+               random_troop_deployment=False,
                random_attack=True,
                random_move=False,
                random_rolls=True,
-               push_frontline=True)
+               push_frontline=True,
+               aggresive_attack=True)
 ai2 = AIPlayer(board=board, 
                board_ref=board_ref, 
                starting_troops=num_player_troops, 
                player_index=1, 
-               random_troop_deployment=True,
+               random_troop_deployment=False,
                random_attack=True,
                random_move=False,
                random_rolls=True,
-               push_frontline=True)
+               push_frontline=True,
+               aggresive_attack=True)
 players = [ai1, ai2]
 
 # Init board
@@ -58,7 +60,7 @@ while not game_over:
     # Increment turn
     game_over, troop_state = engine.game_over(board, len(players))
     player_turn = fns.increment_turn(num_players=len(players), turn=player_turn)
-    if turn % 10 == 0:
+    if turn % 1 == 0:
         board_states.append(copy.deepcopy(board))
     if turn == 1000:
         break
