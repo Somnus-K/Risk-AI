@@ -43,7 +43,7 @@ players = [ai1, ai2]
 # Init board
 board = engine.init_board_place_troops(board=board, board_ref=board_ref, players=players, player_turn=player_turn)
 fns.print_board(board)
-board_states.append(board.copy())
+board_states.append(copy.deepcopy(board))
 
 # Increment Turn?
 player_turn = fns.increment_turn(num_players=len(players), turn=player_turn)
@@ -55,6 +55,7 @@ while not game_over:
     print(f'__Turn {turn}__________________________________________')
     # Select Player
     current_player = players[player_turn]
+    # TODO: This might need to change. should both players be given the opportunity to place troops before each player attacks?
     # Make Choice
     board = current_player.play(board, players)
     # Increment turn
