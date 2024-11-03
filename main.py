@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
 import numpy as np
 # How do we start the script? We need a way to systematically play the game.
-num_players = 2
+num_players = 4
 player_turn = 0
 starting_troop_count = [40,35,30,25,20,15,10,5]
 # Get Board reference dictionary
@@ -38,7 +38,27 @@ ai2 = AIPlayer(board=board,
                random_rolls=True,
                push_frontline=True,
                aggresive_attack=True)
-players = [ai1, ai2]
+ai3 = AIPlayer(board=board, 
+               board_ref=board_ref, 
+               starting_troops=num_player_troops, 
+               player_index=2, 
+               random_troop_deployment=False,
+               random_attack=True,
+               random_move=False,
+               random_rolls=True,
+               push_frontline=True,
+               aggresive_attack=True)
+ai4 = AIPlayer(board=board, 
+               board_ref=board_ref, 
+               starting_troops=num_player_troops, 
+               player_index=3, 
+               random_troop_deployment=False,
+               random_attack=True,
+               random_move=False,
+               random_rolls=True,
+               push_frontline=True,
+               aggresive_attack=True)
+players = [ai1, ai2, ai3, ai4]
 
 # Init board
 board = engine.init_board_place_troops(board=board, board_ref=board_ref, players=players, player_turn=player_turn)
@@ -56,16 +76,19 @@ while not game_over:
     # Select Player
     current_player = players[player_turn]
     # TODO: This might need to change. should both players be given the opportunity to place troops before each player attacks?
-    # Make Choice
-    board = current_player.play(board, players)
-    # Increment turn
-    game_over, troop_state = engine.game_over(board, len(players))
-    player_turn = fns.increment_turn(num_players=len(players), turn=player_turn)
-    if turn % 1 == 0:
-        board_states.append(copy.deepcopy(board))
-    if turn == 1000:
-        break
-    turn+=1
+    if fns.can_player_play(board, player_turn):
+        # Make Choice
+        board = current_player.play(board, players)
+        # Increment turn
+        game_over, troop_state = engine.game_over(board, len(players))
+        player_turn = fns.increment_turn(num_players=len(players), turn=player_turn)
+        if turn % 1 == 0:
+            board_states.append(copy.deepcopy(board))
+        if turn == 1000:
+            break
+        turn+=1
+    else:
+        player_turn = fns.increment_turn(num_players=len(players), turn=player_turn)
 # Print Final Board
 fns.print_board(board)
 
