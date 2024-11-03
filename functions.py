@@ -146,7 +146,7 @@ def get_neighboring_open_territories(global_board: dict, board_ref: dict, player
         # Check the boarder territories
         for col_index, neighbor_territory in board_ref[territory]:
             if not there_are_enemy_troops_here(global_board, neighbor_territory, player_index) and not (neighbor_territory in my_territories):
-                frontier.append(territory)
+                frontier.append(neighbor_territory)
     return frontier
 
 def can_move_to_front_line(global_board: dict, board_ref: dict, player_index: int):

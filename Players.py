@@ -64,8 +64,8 @@ class AIPlayer():
                     self.board = global_board
             return global_board 
         elif self.push_frontline:
-            front_line = fns.get_the_territories_on_the_front_line(self.board, self.board_ref, self.player_index)
             while self.available_troops > 0:
+                front_line = fns.get_the_territories_on_the_front_line(self.board, self.board_ref, self.player_index)
                 if len(front_line) > 0:
                     territory = random.choice(front_line)
                     self.board[territory][self.player_index]+=1
