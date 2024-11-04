@@ -101,6 +101,7 @@ class AIPlayer():
         if self.random_rolls:
             my_num_rolls = random.choice([i for i in range(1, my_max_dice+1)])
             # Get Player Dice
+            # TODO: Pass this players version of the board to the defending player using this defend method so both players are in sync
             their_num_rolls = players[their_index].defend(their_max_dice)
             # get winner
             my_rolls = []
