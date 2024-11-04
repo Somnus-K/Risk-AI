@@ -1,5 +1,37 @@
 import functions as fns
+'''
+    TODO:
+    Things to investigate as metrics:
 
+    Frontline Exposure: How many edges does a player share with an enemy
+    * Per enemy player Exposure
+    * Total Exposure
+
+    Per territory toop allocation line graph
+    * Each player has a line
+    * Plots the number of troops each player has on the specifc territory (one player has troops on it at a time)
+    * Identify sought after territories
+
+    Cluster count (Forgot how to do this help )
+    * Number of clusters of territrories a player has
+    * Consolidated versus fragmented forces
+    * Consolidated forces allows reinforcements to travel to frontlines
+
+    # of troops on frontline versus inside and the ration between the two 
+    * Measure of reinforcements (Troops not on the frontline)
+    * Could be interesting to compare this with the Frontline Exposure
+    * I would bet that the Aggresive bot has a high frontline count and exposure rating
+
+    Ratio of frontline troops to total troops 
+    * How much risk are we exposing our army too?
+    * Interesting with The frontline exposure... I think of Australia, low exposure - Funnel, with the ability to fortify reinforcements behind it to fuel that frontline
+
+    The Troop Aquisition Rate
+    * # of troops gained per turn. 
+    * Derived from the number of territories
+    * Or we can just look at the Delta on the total number of troops a player has turn to turn
+
+'''
 def init_board_place_troops(board, board_ref, players, player_turn):
     """
         This function is responsible for controlling to placement of troops onto the board. It needs to be flexible in that it should allow 
