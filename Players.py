@@ -110,9 +110,9 @@ class AIPlayer():
             their_losses = 0
             while i < max(my_num_rolls, their_num_rolls):
                 if i < my_num_rolls:
-                    my_roll = random.choice([1,2,3,4,5,6])
+                    my_rolls.append(random.choice([1,2,3,4,5,6]))
                 if i < their_num_rolls:
-                    their_roll = random.choice([1,2,3,4,5,6])
+                    their_rolls.append(random.choice([1,2,3,4,5,6]))
                 i+=1
             # Compare Highest Rolls
             while len(my_rolls) > 0 and len(their_rolls) > 0:
