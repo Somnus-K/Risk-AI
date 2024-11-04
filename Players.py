@@ -152,7 +152,7 @@ class AIPlayer():
         to_territory = movement_direction[1]
         # Assume that if we are random moving we are moving a random amount too
         if self.random_move:
-            sent_troops = random.choice([i for i in range(1, self.board[from_territory][self.player_index])-1])
+            sent_troops = random.choice([i for i in range(1, self.board[from_territory][self.player_index] - 1)])
             self.board = fns.add_troops_to_territory(self.board, to_territory, self.player_index, sent_troops)
             self.board = fns.remove_troops_from_territory(self.board, from_territory, self.player_index, sent_troops)
         elif self.push_frontline:
