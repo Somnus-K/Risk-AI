@@ -151,7 +151,7 @@ if x.upper() == "Y":
 
     # Create the animation, using the number of snapshots as the total frames
     ani = FuncAnimation(fig, update, frames=len(board_states), blit=True, interval=100)
-    ani.save('game_board_animation.mp4', writer='ffmpeg', dpi=300)
+    ani.save('troop distribution bar chart.mp4', writer='ffmpeg', dpi=300)
 else:
     pass
 x = input("Y: make map movie, N: exit\n")
@@ -171,9 +171,12 @@ if x.upper() == "Y":
         nx.draw(G, pos, with_labels=True, node_size=3000, labels=board_map.node_labels, node_color=board_map.node_colors, font_size=8, font_weight="bold", edge_color="gray")
     
     ani = FuncAnimation(fig, update_graph, frames=len(board_states), interval=100)
-    plt.show()
+    ani.save('Board.mp4', writer='ffmpeg', dpi=300)
+    fig.clf()
+    plt.close('all')
 else:
     pass
+plt.clf()
 fig, axs = plt.subplots(1, 3, figsize=(15, 5))
 # Plot change in chance to win over time
 X = range(0, len(players_troops_ratio))
