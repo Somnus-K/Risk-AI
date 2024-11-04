@@ -156,14 +156,14 @@ def can_move_to_front_line(global_board: dict, board_ref: dict, player_index: in
     for territory in my_territories:
         if get_my_troops_here(global_board, territory, player_index) > 1:
             for col_index, neighbor_territory in board_ref[territory]:
-                if neighbor_territory in front_line:
+                if neighbor_territory in front_line or is_territory_available(global_board, neighbor_territory, player_index): # EXPAND THE BOUNDARY
                     movement_options.append((territory, neighbor_territory))
     return len(movement_options)>0, movement_options
 
 def get_troop_ratio(global_board: dict, attack_direction: tuple, player_index: int):
     my_troops = get_my_troops_here(global_board, attack_direction[0], player_index)
     their_troops = get_enemy_troops_here(global_board, attack_direction[1], player_index)[1]
-    ratio = 0
+    ratio = -1
     if their_troops > 0:
         ratio = my_troops / their_troops
     return ratio
@@ -176,4 +176,20 @@ def can_player_play(global_board: dict, player_index: int):
             can_they = True
             break
     return can_they
+
+def get_player_here(global_board: dict, territory: str):
+    index = -1
+    for player_index, troops in enumerate(global_board[territory]):
+        if troops > 0:
+            index = player_index
+            break
+    return index
+
+def get_troops_here(global_board: dict, territory: str):
+    troops = 0
+    for player_index, troops in enumerate(global_board[territory]):
+        if troops > 0:
+            troops = troops
+            break
+    return troops
 
