@@ -126,12 +126,9 @@ class AIPlayer():
                 # Remove the dice
                 my_rolls.remove(max(my_rolls))
                 their_rolls.remove(max(their_rolls))
-            # TODO: A. This is Wrong, B. Verify that the distribution of troops after a battle is correct
-            # TODO: I'm watching back some footage and it looks like troops arent being dispersed correctly when a player wins the battle
-            # If I roll more dice, They're guaranteed to lose an additional number of troops equal to the difference in dice thrown    
-            if my_num_rolls > their_num_rolls:
-                their_losses += my_num_rolls - their_num_rolls
+            # Apply Troop loses to each player
             self.board = fns.remove_troops_from_territory(self.board, to_territory, their_index, their_losses)
+            # Advance if we can
             if fns.get_enemy_troops_here(self.board, to_territory, self.player_index)[1] == 0:
                 advancing_troops = my_num_rolls - my_losses
                 # Someone has to stay behind
@@ -141,10 +138,8 @@ class AIPlayer():
                 self.board = fns.remove_troops_from_territory(self.board, from_territory, self.player_index, advancing_troops)
             else:
                 # Enemy is still there, subtract my losses from my troops
-                # TODO: What happens if I roll 3 die? do lose that 3rd troop? or is it just a way to have an advantage (one extra highest roll)
                 self.board = fns.remove_troops_from_territory(self.board, from_territory, self.player_index, my_losses)
-
-        pass
+        pass # END ATTACK
 
     def defend(self, num_dice):
         import random
