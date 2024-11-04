@@ -96,7 +96,7 @@ class AIPlayer():
         their_index, their_troops = fns.get_enemy_troops_here(self.board, to_territory, self.player_index)
         my_max_dice = 3 if my_troops > 2 else my_troops
         their_max_dice = 2 if their_troops > 1 else 1 
-        # TODO: Refactor rolls - we compare dice based on desc order (my highest versus your highest, so on and so forth)
+        # Refactor rolls - we compare dice based on desc order (my highest versus your highest, so on and so forth)
         # This is done. TODO: verify this code
         if self.random_rolls:
             my_num_rolls = random.choice([i for i in range(1, my_max_dice+1)])
