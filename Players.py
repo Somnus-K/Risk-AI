@@ -228,7 +228,6 @@ class AIPlayer():
                     # Move 
                     target = self.pick_move(movement_options)
                     self.move(target)
-                    player_can_move, movement_options = fns.player_can_move(global_board=self.board, board_ref=self.board_ref, player_index=self.player_index)
             elif self.push_frontline and player_can_move_fl:
                 # ALWAYS fortify in this mode
                 # Move 
