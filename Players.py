@@ -199,7 +199,7 @@ class AIPlayer():
         self.board = self.place_troop(global_board=self.board) # Sync boards
         
         playing = True
-        # TODO: The player has 3 options - Move Armies, Attack or Pass.. plus the 1 free reinforcement move
+        # TODO: The player has 2 options - Attack or pass, and optionally you can choose to move/fortify one pair of territories
         while playing:
             # Attack or stay idle
             player_can_attack, attack_options = fns.player_can_attack(global_board=self.board, board_ref=self.board_ref, player_index=self.player_index)
