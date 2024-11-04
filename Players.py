@@ -96,6 +96,7 @@ class AIPlayer():
         their_index, their_troops = fns.get_enemy_troops_here(self.board, to_territory, self.player_index)
         my_max_dice = 3 if my_troops > 2 else my_troops
         their_max_dice = 2 if their_troops > 1 else 1 
+        # TODO: Refactor rolls - we compare dice based on desc order (my highest versus your highest, so on and so forth)
         if self.random_rolls:
             my_num_rolls = random.choice([i for i in range(1, my_max_dice+1)])
             # Get Player Dice
@@ -185,6 +186,7 @@ class AIPlayer():
         self.board = self.place_troop(global_board=self.board) # Sync boards
         
         playing = True
+        # TODO: The player has 3 options - Move Armies, Attack or Pass.. plus the 1 free reinforcement move
         while playing:
             # Attack or stay idle
             player_can_attack, attack_options = fns.player_can_attack(global_board=self.board, board_ref=self.board_ref, player_index=self.player_index)
@@ -192,8 +194,11 @@ class AIPlayer():
                 if self.random_attack:     
                     # Coin Toss... maybe not
                     if random.choice([0]) == 0:
+                        # TODO: The player can continue to attack the same territory if they want... 
+                        # kind of implemented here if they choose the same target
                         # Attack
                         target = self.pick_target(attack_options) 
+                        # TODO: The player can continue to attack the same territory if they want... kind of implemented here if they choose the same target
                         self.attack(target, players) # Board is updated
                         # Update our attack options
                         player_can_attack, attack_options = fns.player_can_attack(global_board=self.board, board_ref=self.board_ref, player_index=self.player_index)
