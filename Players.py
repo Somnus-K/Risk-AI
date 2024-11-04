@@ -152,7 +152,7 @@ class AIPlayer():
         to_territory = movement_direction[1]
         # Assume that if we are random moving we are moving a random amount too
         if self.random_move:
-            sent_troops = random.choice([i for i in range(1, self.board[from_territory][self.player_index] - 1)])
+            sent_troops = random.choice([i for i in range(1, self.board[from_territory][self.player_index])])
             self.board = fns.add_troops_to_territory(self.board, to_territory, self.player_index, sent_troops)
             self.board = fns.remove_troops_from_territory(self.board, from_territory, self.player_index, sent_troops)
         elif self.push_frontline:
@@ -228,13 +228,19 @@ class AIPlayer():
                 # Coin Toss
                 if random.choice([0,1]) == 1:
                     # Move 
-                    target = self.pick_move(movement_options)
-                    self.move(target)
+                    while True:
+                        target = self.pick_move(movement_options)
+                        if fns.get_my_troops_here(self.board, target[0], self.player_index) > 1:
+                            self.move(target)
+                            break
             elif self.push_frontline and player_can_move_fl:
                 # ALWAYS fortify in this mode
                 # Move 
-                target = self.pick_move(movement_options_fl)
-                self.move(target)
+                while True:
+                    target = self.pick_move(movement_options_fl)
+                    if fns.get_my_troops_here(self.board, target[0], self.player_index) > 1:
+                        self.move(target)
+                        break
             else:
                 # AI Move
                 pass
