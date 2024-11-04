@@ -99,7 +99,7 @@ while not game_over:
         player_turn = fns.increment_turn(num_players=len(players), turn=player_turn)
         if turn % 1 == 0:
             board_states.append(copy.deepcopy(board))
-        if turn == 1000:
+        if turn == 500: # Takes too long to save animations
             break
         turn+=1
         # Calculate Win chances

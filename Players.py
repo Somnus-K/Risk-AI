@@ -58,13 +58,13 @@ class AIPlayer():
     
     def place_troop(self, global_board: dict):
         import random
+        # TODO: Refactor so that you only place troops on the territories that you own
         if self.random_troop_deployment:
             while self.available_troops > 0:
-                territory = random.choice(self.territory_names)
-                if (fns.is_territory_available(global_board=global_board, territory=territory, player_index=self.player_index)):
-                    global_board[territory][self.player_index]+=1
-                    self.available_troops-=1
-                    self.board = global_board
+                territory = random.choice(fns.get_my_territories(self.board, self.player_index))
+                global_board[territory][self.player_index]+=1
+                self.available_troops-=1
+                self.board = global_board
             return global_board 
         elif self.push_frontline:
             while self.available_troops > 0:
@@ -75,10 +75,10 @@ class AIPlayer():
                     self.available_troops-=1
                 else: 
                     print('No Front line?')
-                    # Expand the horizon?
-                    horizon = fns.get_neighboring_open_territories(self.board, self.board_ref, self.player_index)
-                    if len(horizon) > 0:
-                        territory = random.choice(horizon)
+                    # TODO: How to handle this - Place troops on territories that are next to open territories?
+                    my_territories = fns.get_my_territories(self.board, self.player_index)
+                    if len(my_territories) > 0:
+                        territory = random.choice(my_territories)
                         self.board[territory][self.player_index]+=1
                         self.available_troops-=1
                     else:
@@ -90,12 +90,14 @@ class AIPlayer():
     
     def attack(self, attack_direction, players):
         import random
+        # TODO: Refactor this. The Num Dice and losing of players is all wrong. rules say you immediately capture a teritory if you eliminate all enemy troops
         from_territory = attack_direction[0]
         to_territory = attack_direction[1]
         my_troops = fns.get_my_troops_here(self.board, from_territory, self.player_index)
         their_index, their_troops = fns.get_enemy_troops_here(self.board, to_territory, self.player_index)
-        my_max_dice = 3 if my_troops > 2 else my_troops
-        their_max_dice = 2 if their_troops > 1 else 1 
+        # TODO: Remember, you must have atleast 1 more troop than the # of dice you roll
+        my_max_dice = 3 if my_troops > 3 else (2 if my_troops > 2 else 1)
+        their_max_dice = 2 if their_troops > 2 else 1 # TODO: This should be a function player.get_defend_dice 
         # Refactor rolls - we compare dice based on desc order (my highest versus your highest, so on and so forth)
         # This is done. TODO: verify this code
         if self.random_rolls:
@@ -131,7 +133,7 @@ class AIPlayer():
             # Advance if we can
             if fns.get_enemy_troops_here(self.board, to_territory, self.player_index)[1] == 0:
                 advancing_troops = my_num_rolls - my_losses
-                # Someone has to stay behind
+                # Someone has to stay behind NOTE: This shouldnt happen because of the dice rules above
                 if fns.get_my_troops_here(self.board, to_territory, self.player_index) == advancing_troops:
                     advancing_troops -= 1
                 self.board = fns.add_troops_to_territory(self.board, to_territory, self.player_index, advancing_troops)
@@ -185,12 +187,23 @@ class AIPlayer():
             # Push frontline with Lowest ratio of Troops to enemies 
             # Kind of nice because it favors open land (ratio = 0) and if there is none, fortify our losing chances (their troops > our troops)
             min_ratio = 999999999999
-            best_move_index = 0
+            open_lands = []
+            conflict_land = 0
+            best_move_index = -1
             for move_index, move in enumerate(movement_options):
                 ratio = fns.get_troop_ratio(self.board, move, self.player_index)
-                if ratio < min_ratio:
+                if 0 < ratio < min_ratio:
                     min_ratio = ratio
-                    best_move_index = move_index
+                    conflict_land = move_index
+                elif ratio == -1:
+                    open_lands.append(move_index)
+            # Decide to expand or fight
+            if random.choice([0,1]) == 0:
+                # Attack
+                best_move_index = conflict_land
+            else:
+                # Randomly choose an open land to capture
+                best_move_index = random.choice(open_lands)
             return movement_options[best_move_index]
 
     def play(self, global_board: dict, players):
