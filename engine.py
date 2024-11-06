@@ -7,7 +7,7 @@ import functions as fns
     * Per enemy player Exposure
     * Total Exposure
 
-    Per territory toop allocation line graph
+    Per territory troop allocation line graph
     * Each player has a line
     * Plots the number of troops each player has on the specifc territory (one player has troops on it at a time)
     * Identify sought after territories
