@@ -3,7 +3,7 @@ import functions as fns
     TODO:
     Things to investigate as metrics:
 
-    Frontline Exposure: How many edges does a player share with an enemy
+    Frontline Exposure(__DONE__): How many edges does a player share with an enemy
     * Per enemy player Exposure
     * Total Exposure
 
@@ -98,3 +98,25 @@ def calculate_players_troop_territory_ratio(board, num_players):
         else:
             res.append(0)
     return res
+
+def calculate_number_of_edges_in_frontline(board, board_ref, num_players):
+    player_frontline_exposure = [0 for i in range(0, num_players)]
+    for territory in board:
+        player_who_owns_this_land = fns.get_player_here(board, territory)
+        for col_index, neighbor in board_ref[territory]:
+            player_adjacent = fns.get_player_here(board, neighbor)
+            if player_adjacent != player_who_owns_this_land:
+                player_frontline_exposure[player_who_owns_this_land] += 1
+    return player_frontline_exposure
+
+
+def calculate_number_of_troops_on_frontline(board, board_ref, num_players):
+    frontline_troops = [0 for i in range(0, num_players)]
+    for territory in board:
+        player_who_owns_this_land = fns.get_player_here(board, territory)
+        for col_index, neighbor in board_ref[territory]:
+            player_adjacent = fns.get_player_here(board, neighbor)
+            if player_adjacent != player_who_owns_this_land:
+                frontline_troops[player_who_owns_this_land] += fns.get_my_troops_here(board, territory, player_who_owns_this_land)
+    return frontline_troops
+    
