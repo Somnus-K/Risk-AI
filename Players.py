@@ -97,6 +97,7 @@ class AIPlayer():
         their_index, their_troops = fns.get_enemy_troops_here(self.board, to_territory, self.player_index)
         # TODO: Remember, you must have atleast 1 more troop than the # of dice you roll
         my_max_dice = 3 if my_troops > 3 else (2 if my_troops > 2 else 1)
+        # TODO: Number of dice should equal number of troops up to 2 dice
         their_max_dice = 2 if their_troops > 2 else 1 # TODO: This should be a function player.get_defend_dice 
         # Refactor rolls - we compare dice based on desc order (my highest versus your highest, so on and so forth)
         # This is done. TODO: verify this code
@@ -135,6 +136,7 @@ class AIPlayer():
                 advancing_troops = my_num_rolls - my_losses
                 # Someone has to stay behind NOTE: This shouldnt happen because of the dice rules above
                 if fns.get_my_troops_here(self.board, to_territory, self.player_index) == advancing_troops:
+                    # TODO: Put an assert here to alert us of error
                     advancing_troops -= 1
                 self.board = fns.add_troops_to_territory(self.board, to_territory, self.player_index, advancing_troops)
                 self.board = fns.remove_troops_from_territory(self.board, from_territory, self.player_index, advancing_troops)
@@ -168,7 +170,7 @@ class AIPlayer():
         import random
         if self.random_targeting: 
             return random.choice(attack_options)
-        if self.aggresive_targeting:
+        elif self.aggresive_targeting:
             # Push frontline with greatest ratio of Troops to enemies 
             max_ratio = 0
             best_move_index = 0
@@ -196,9 +198,11 @@ class AIPlayer():
                     min_ratio = ratio
                     conflict_land = move_index
                 elif ratio == -1:
+                    # THIS SHOULD NEVER HAPPEN
                     open_lands.append(move_index)
             # Decide to expand or fight
-            if random.choice([0,1]) == 0:
+            # TODO: OPEN LANDS SHOULD NEVER HAPPEN
+            if random.choice([0]) == 0:
                 # Attack
                 best_move_index = conflict_land
             else:
@@ -243,7 +247,8 @@ class AIPlayer():
                     # Move 
                     while True:
                         target = self.pick_move(movement_options)
-                        if fns.get_my_troops_here(self.board, target[0], self.player_index) > 1:
+                        # We should never have to do this check
+                        if fns.get_my_troops_here(self.board, target[0], self.player_index) > 1: # We check this already in player_can_move
                             self.move(target)
                             break
             elif self.push_frontline and player_can_move_fl:
@@ -251,7 +256,7 @@ class AIPlayer():
                 # Move 
                 while True:
                     target = self.pick_move(movement_options_fl)
-                    if fns.get_my_troops_here(self.board, target[0], self.player_index) > 1:
+                    if fns.get_my_troops_here(self.board, target[0], self.player_index) > 1: # We check this already in player_can_move
                         self.move(target)
                         break
             else:

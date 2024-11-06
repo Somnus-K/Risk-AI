@@ -19,6 +19,8 @@ board_states = [] # Used for animation
 players_troops_ratio = [] # Statistics
 players_total_territories = [] # Statistics
 players_troop_territory_ratios = [] # Statistics
+players_frontline_exposure = [] # Statistics
+players_frontline_troops = [] # Statistics
 
 # Initialize Game State. Players inject troops onto the board. Needs to Happen Systemmatically to allow the AI to make decision in the future?
 num_player_troops = starting_troop_count[num_players-2]
@@ -79,6 +81,8 @@ board_states.append(copy.deepcopy(board))
 players_troops_ratio.append(copy.deepcopy(engine.calculate_player_troops(board, len(players))))
 players_total_territories.append(copy.deepcopy(engine.calculate_players_num_territories(board, len(players))))
 players_troop_territory_ratios.append(copy.deepcopy(engine.calculate_players_troop_territory_ratio(board, len(players))))
+players_frontline_exposure.append(copy.deepcopy(engine.calculate_number_of_edges_in_frontline(board, board_ref, len(players))))
+players_frontline_troops.append(copy.deepcopy(engine.calculate_number_of_edges_in_frontline(board, board_ref, len(players))))
 
 # Increment Turn?
 player_turn = fns.increment_turn(num_players=len(players), turn=player_turn)
@@ -106,6 +110,8 @@ while not game_over:
         players_troops_ratio.append(copy.deepcopy(engine.calculate_player_troops(board, len(players))))
         players_total_territories.append(copy.deepcopy(engine.calculate_players_num_territories(board, len(players))))
         players_troop_territory_ratios.append(copy.deepcopy(engine.calculate_players_troop_territory_ratio(board, len(players))))
+        players_frontline_exposure.append(copy.deepcopy(engine.calculate_number_of_edges_in_frontline(board, board_ref, len(players))))
+        players_frontline_troops.append(copy.deepcopy(engine.calculate_number_of_troops_on_frontline(board, board_ref, len(players))))
     else:
         player_turn = fns.increment_turn(num_players=len(players), turn=player_turn)
 # Print Final Board
@@ -176,18 +182,23 @@ if x.upper() == "Y":
     plt.close('all')
 else:
     pass
+# Figures 1-3-------------------------------------------------------------
 plt.clf()
-fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+fig, axs = plt.subplots(2, 3, figsize=(15, 5))
 # Plot change in chance to win over time
 X = range(0, len(players_troops_ratio))
 ys_win = []
 ys_territory = []
 ys_tt_ratio = []
+ys_flexposure = []
+ys_frontline_troops = []
 # Extract the Y's
 for player_index, player in enumerate(players):
     y_win_partial = []
     y_ter_partial = []
     y_tt_ratio = []
+    y_flexposure = []
+    y_frontline_troops = []
 
     for player_percentages in players_troops_ratio:
         y_win_partial.append(player_percentages[player_index])
@@ -197,30 +208,53 @@ for player_index, player in enumerate(players):
     
     for player_tt in players_troop_territory_ratios:
         y_tt_ratio.append(player_tt[player_index])
+    
+    for player_exposure in players_frontline_exposure:
+        y_flexposure.append(player_exposure[player_index])
+
+    for player_troops in players_frontline_troops:
+        y_frontline_troops.append(player_troops[player_index])
+
+    ys_flexposure.append(copy.deepcopy(y_flexposure))
+    ys_frontline_troops.append(copy.deepcopy(y_frontline_troops))
 
     ys_win.append(copy.deepcopy(y_win_partial))
     ys_territory.append(copy.deepcopy(y_ter_partial))
     ys_tt_ratio.append(copy.deepcopy(y_tt_ratio))
 
 for player_index, y in enumerate(ys_win):
-    axs[0].plot(X,y, color=colors[player_index], label=f"Player {player_index+1}")
+    axs[0,0].plot(X,y, color=colors[player_index], label=f"Player {player_index+1}")
 
 for player_index, y in enumerate(ys_territory):
-    axs[1].plot(X,y, color=colors[player_index], label=f"Player {player_index+1}")
+    axs[0,1].plot(X,y, color=colors[player_index], label=f"Player {player_index+1}")
 
 for player_index, y in enumerate(ys_tt_ratio):
-    axs[2].plot(X,y, color=colors[player_index], label=f"Player {player_index+1}")
+    axs[0,2].plot(X,y, color=colors[player_index], label=f"Player {player_index+1}")
+
+
+for player_index, y in enumerate(ys_flexposure):
+    axs[1,0].plot(X,y, color=colors[player_index], label=f"Player {player_index+1}")
+
+
+for player_index, y in enumerate(ys_frontline_troops):
+    axs[1,1].plot(X,y, color=colors[player_index], label=f"Player {player_index+1}")
 
 # Add a legend to describe each line
-axs[0].set_xlabel("Turn #")
-axs[0].set_ylabel("# Troops on Board")
-axs[0].set_title("Troops Deployed Timeline")
-axs[1].set_xlabel("Turn #")
-axs[1].set_ylabel("# Territories")
-axs[1].set_title("Territories Conquered Timeline")
-axs[2].set_xlabel("Turn #")
-axs[2].set_ylabel("Troops to Territories")
-axs[2].set_title("Ratio Troops to Territories")
+axs[0,0].set_xlabel("Turn #")
+axs[0,0].set_ylabel("# Troops on Board")
+axs[0,0].set_title("Troops Deployed Timeline")
+axs[0,1].set_xlabel("Turn #")
+axs[0,1].set_ylabel("# Territories")
+axs[0,1].set_title("Territories Conquered Timeline")
+axs[0,2].set_xlabel("Turn #")
+axs[0,2].set_ylabel("Troops to Territories")
+axs[0,2].set_title("Ratio Troops to Territories")
+axs[1,0].set_xlabel("Turn #")
+axs[1,0].set_ylabel("# of Adjacent Enemies")
+axs[1,0].set_title("Frontline Exposure")
+axs[1,1].set_xlabel("Turn #")
+axs[1,1].set_ylabel("# of Troops on Frontline")
+axs[1,1].set_title("Frontline Deployment")
 plt.show()
 
 
