@@ -95,6 +95,7 @@ while not game_over:
     # Select Player
     current_player = players[player_turn]
     # TODO: This might need to change. should both players be given the opportunity to place troops before each player attacks?
+    # TODO : The game should follow a traditional turn-based system where Player A goes first with their entire turn, then Player B goes with their entire turn.
     if fns.can_player_play(board, player_turn):
         # Make Choice
         board = current_player.play(board, players)
