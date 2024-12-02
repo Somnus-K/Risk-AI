@@ -17,11 +17,21 @@ class ReinforcementLearningAgent:
         return self.available_troops
 
     def place_troop_init(self, global_board):
+        """Place troops during the initialization phase."""
         while self.available_troops > 0:
-            territory = random.choice(fns.get_my_territories(global_board, self.player_index))
+            my_territories = fns.get_my_territories(global_board, self.player_index)
+            if not my_territories:
+                # Fallback: Choose a random territory that is unoccupied
+                territory = random.choice(list(global_board.keys()))
+            else:
+                territory = random.choice(my_territories)
+            
+            # Add troop to the chosen territory
             fns.add_troops_to_territory(global_board, territory, self.player_index, 1)
             self.available_troops -= 1
+
         return global_board
+
 
     def place_troop(self, global_board):
         while self.available_troops > 0:
@@ -69,3 +79,15 @@ class ReinforcementLearningAgent:
         if troops_to_move > 0:
             fns.add_troops_to_territory(global_board, to_territory, self.player_index, troops_to_move)
             fns.remove_troops_from_territory(global_board, from_territory, self.player_index, troops_to_move)
+
+def update_q_value(self, state, action, reward, next_state):
+    if state not in self.q_table:
+        self.q_table[state] = {}
+    if action not in self.q_table[state]:
+        self.q_table[state][action] = 0
+
+    # Get the maximum Q-value for the next state
+    next_max = max(self.q_table.get(next_state, {}).values(), default=0)
+
+    # Update the Q-value using the Q-learning formula
+    self.q_table[state][action] += self.alpha * (reward + self.gamma * next_max - self.q_table[state][action])
