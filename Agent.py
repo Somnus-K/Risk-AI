@@ -14,11 +14,9 @@ class ReinforcementLearningAgent:
         self.q_table = {}
 
     def get_available_troops(self):
-        """Returns the number of available troops."""
         return self.available_troops
 
     def place_troop_init(self, global_board):
-        """Place troops during the initialization phase."""
         while self.available_troops > 0:
             territory = random.choice(fns.get_my_territories(global_board, self.player_index))
             fns.add_troops_to_territory(global_board, territory, self.player_index, 1)
@@ -26,7 +24,6 @@ class ReinforcementLearningAgent:
         return global_board
 
     def place_troop(self, global_board):
-        """Place troops during regular turns."""
         while self.available_troops > 0:
             territory = random.choice(fns.get_my_territories(global_board, self.player_index))
             fns.add_troops_to_territory(global_board, territory, self.player_index, 1)
@@ -34,7 +31,6 @@ class ReinforcementLearningAgent:
         return global_board
 
     def play(self, global_board, players):
-        """Main logic for the RL agent's turn."""
         self.board = global_board
 
         # Troop placement
@@ -57,7 +53,6 @@ class ReinforcementLearningAgent:
         return global_board
 
     def attack(self, global_board, attack_direction, players):
-        """Executes an attack."""
         from_territory, to_territory = attack_direction
         my_troops = fns.get_my_troops_here(global_board, from_territory, self.player_index)
         their_index, their_troops = fns.get_enemy_troops_here(global_board, to_territory, self.player_index)
@@ -69,7 +64,6 @@ class ReinforcementLearningAgent:
             fns.add_troops_to_territory(global_board, to_territory, self.player_index, my_troops - 1)
 
     def move(self, global_board, movement_direction):
-        """Moves troops between territories."""
         from_territory, to_territory = movement_direction
         troops_to_move = fns.get_my_troops_here(global_board, from_territory, self.player_index) - 1
         if troops_to_move > 0:
