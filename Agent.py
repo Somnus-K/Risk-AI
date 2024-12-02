@@ -80,14 +80,14 @@ class ReinforcementLearningAgent:
             fns.add_troops_to_territory(global_board, to_territory, self.player_index, troops_to_move)
             fns.remove_troops_from_territory(global_board, from_territory, self.player_index, troops_to_move)
 
-def update_q_value(self, state, action, reward, next_state):
-    if state not in self.q_table:
-        self.q_table[state] = {}
-    if action not in self.q_table[state]:
-        self.q_table[state][action] = 0
+    def update_q_value(self, state, action, reward, next_state):
+        if state not in self.q_table:
+            self.q_table[state] = {}
+        if action not in self.q_table[state]:
+            self.q_table[state][action] = 0
 
-    # Get the maximum Q-value for the next state
-    next_max = max(self.q_table.get(next_state, {}).values(), default=0)
+        # Get the maximum Q-value for the next state
+        next_max = max(self.q_table.get(next_state, {}).values(), default=0)
 
-    # Update the Q-value using the Q-learning formula
-    self.q_table[state][action] += self.alpha * (reward + self.gamma * next_max - self.q_table[state][action])
+        # Update the Q-value using the Q-learning formula
+        self.q_table[state][action] += self.alpha * (reward + self.gamma * next_max - self.q_table[state][action])
