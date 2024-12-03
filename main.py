@@ -31,7 +31,7 @@ def run_single_game(num_players):
         alpha=ALPHA,
         gamma=GAMMA,
         epsilon=EPSILON,
-        q_table_path="q_table.json"
+        q_table_path="q_table.pkl"
     )
     rl2_agent = ReinforcementLearningAgent(
         board=board,
@@ -125,4 +125,4 @@ def train_agent(num_games=100, num_players=4):
 
 
 if __name__ == "__main__":
-    train_agent(num_games=50, num_players=4)  # Specify num_players
+    train_agent(num_games=1000, num_players=4)  # Specify num_players
