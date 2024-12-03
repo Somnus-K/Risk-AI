@@ -9,7 +9,6 @@ from WorldMap import WorldMap
 # Colors for players
 colors = ['red', 'blue', 'green', 'orange']
 num_players = 4
-player_turn = 0
 starting_troop_count = [40, 35, 30, 25, 20, 15, 10, 5]
 
 # RL Agent hyperparameters
@@ -18,75 +17,87 @@ GAMMA = 0.9
 EPSILON = 0.1
 
 
-# Get Board reference dictionary
-board_ref = fns.get_board_adj_dict()
-board = fns.get_blank_board(num_players=num_players, board_ref=board_ref)
+def run_single_game(num_players):
+    """Runs a single game and returns the results."""
+    player_turn = 0
+    board_ref = fns.get_board_adj_dict()  # Correctly initialize the board reference
+    board = fns.get_blank_board(num_players=num_players, board_ref=board_ref)
 
-# Initialize other players
-ai2 = AIPlayer(board=board, board_ref=board_ref, starting_troops=starting_troop_count[num_players-2], player_index=1,
-               random_troop_deployment=True, random_attack=True, random_move=True, random_rolls=True, push_frontline=False, aggresive_targeting=False, random_targeting=True)
-ai3 = AIPlayer(board=board, board_ref=board_ref, starting_troops=starting_troop_count[num_players-2], player_index=2,
-               random_troop_deployment=True, random_attack=True, random_move=True, random_rolls=True, push_frontline=False, aggresive_targeting=True, random_targeting=False)
-ai4 = AIPlayer(board=board, board_ref=board_ref, starting_troops=starting_troop_count[num_players-2], player_index=3,
-               random_troop_deployment=False, random_attack=True, random_move=False, random_rolls=True, push_frontline=True, aggresive_targeting=True, random_targeting=False)
-# Initialize the RL agent
-rl_agent = ReinforcementLearningAgent(
-    board=board,
-    board_ref=board_ref,
-    starting_troops=starting_troop_count[num_players-2],
-    player_index=0
-)
+    # Initialize players
+    rl_agent = ReinforcementLearningAgent(
+        board=board,
+        board_ref=board_ref,
+        starting_troops=starting_troop_count[num_players - 2],
+        player_index=0,
+        alpha=ALPHA,
+        gamma=GAMMA,
+        epsilon=EPSILON
+    )
+    ai2 = AIPlayer(board=board, board_ref=board_ref, starting_troops=starting_troop_count[num_players - 2],
+                   player_index=1,
+                   random_troop_deployment=True, random_attack=True, random_move=True, random_rolls=True,
+                   push_frontline=False, aggresive_targeting=False, random_targeting=True)
+    ai3 = AIPlayer(board=board, board_ref=board_ref, starting_troops=starting_troop_count[num_players - 2],
+                   player_index=2,
+                   random_troop_deployment=True, random_attack=True, random_move=True, random_rolls=True,
+                   push_frontline=False, aggresive_targeting=True, random_targeting=False)
+    ai4 = AIPlayer(board=board, board_ref=board_ref, starting_troops=starting_troop_count[num_players - 2],
+                   player_index=3,
+                   random_troop_deployment=False, random_attack=True, random_move=False, random_rolls=True,
+                   push_frontline=True, aggresive_targeting=True, random_targeting=False)
+    players = [rl_agent, ai2, ai3, ai4]
 
-players = [rl_agent, ai2, ai3, ai4]
+    # Initialize the game board
+    board = engine.init_board_place_troops(board=board, board_ref=board_ref, players=players, player_turn=player_turn)
+    board_states = [copy.deepcopy(board)]
+    rewards = [0] * num_players
 
-# Initialize the game board
-board = engine.init_board_place_troops(board=board, board_ref=board_ref, players=players, player_turn=player_turn)
-fns.print_board(board)
+    # Game loop
+    game_over, troop_state = engine.game_over(board, len(players))
+    turn = 1
+    while not game_over:
+        current_player = players[player_turn]
 
-# Initialize stats
-board_states = [copy.deepcopy(board)]
-rewards = [0] * num_players
-win_counts = [0] * num_players
+        if fns.can_player_play(board, player_turn):
+            if player_turn == 0:  # RL agent's turn
+                state = (tuple(engine.calculate_player_troops(board, len(players))),
+                         tuple(engine.calculate_players_num_territories(board, len(players))))
+                board = current_player.play(board, players)
+                next_state = (tuple(engine.calculate_player_troops(board, len(players))),
+                              tuple(engine.calculate_players_num_territories(board, len(players))))
+                reward = engine.calculate_player_troops(board, len(players))[0] - rewards[player_turn]
+                rl_agent.update_q_value(state, None, reward, next_state)
+                rewards[player_turn] = engine.calculate_player_troops(board, len(players))[0]
+            else:
+                board = current_player.play(board, players)
 
-# Game loop
-game_over, troop_state = engine.game_over(board, len(players))
-turn = 1
+            # Check game over condition
+            game_over, troop_state = engine.game_over(board, len(players))
+            player_turn = fns.increment_turn(num_players=len(players), turn=player_turn)
+            turn += 1
 
-while not game_over:
-    print(f'__Turn {turn}__________________________________________')
-    current_player = players[player_turn]
-
-    if fns.can_player_play(board, player_turn):
-        # RL agent-specific logic
-        if player_turn == 0:  # RL agent's turn
-            state = (tuple(engine.calculate_player_troops(board, len(players))),
-                     tuple(engine.calculate_players_num_territories(board, len(players))))
-            board = current_player.play(board, players)
-            next_state = (tuple(engine.calculate_player_troops(board, len(players))),
-                          tuple(engine.calculate_players_num_territories(board, len(players))))
-            reward = engine.calculate_player_troops(board, len(players))[0] - rewards[player_turn]
-            rl_agent.update_q_value(state, None, reward, next_state)
-            rewards[player_turn] = engine.calculate_player_troops(board, len(players))[0]
+            # Save board states
+            board_states.append(copy.deepcopy(board))
         else:
-            board = current_player.play(board, players)
+            player_turn = fns.increment_turn(num_players=len(players), turn=player_turn)
 
-        # Check game over condition
-        game_over, troop_state = engine.game_over(board, len(players))
-        player_turn = fns.increment_turn(num_players=len(players), turn=player_turn)
-        turn += 1
+    # Determine winner
+    winner = troop_state.index(max(troop_state))
+    return winner
 
-        # Save board states
-        board_states.append(copy.deepcopy(board))
 
-    else:
-        player_turn = fns.increment_turn(num_players=len(players), turn=player_turn)
+def train_agent(num_games=100, num_players=4):
+    """Runs multiple games to train the RL agent."""
+    win_counts = [0] * num_players  # Define num_players locally
+    for game in range(num_games):
+        print(f"Starting Game {game + 1}")
+        winner = run_single_game(num_players)  # Pass num_players
+        win_counts[winner] += 1
+        print(f"Winner: Player {winner + 1}")
 
-# Determine winner
-winner = troop_state.index(max(troop_state))
-win_counts[winner] += 1
+    print("Training Completed")
+    print("Win Counts:", win_counts)
 
-# Print final board
-fns.print_board(board)
 
-# Display results
-print(f"Winner: Player {winner + 1}")
+if __name__ == "__main__":
+    train_agent(num_games=100, num_players=4)  # Specify num_players
