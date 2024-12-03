@@ -12,6 +12,7 @@ class ReinforcementLearningAgent():
         self.gamma = gamma  # Discount factor
         self.epsilon = epsilon  # Exploration rate
         self.q_table = {}
+        self.numUpdated = 0
 
     def get_available_troops(self):
         return self.available_troops
@@ -111,3 +112,5 @@ class ReinforcementLearningAgent():
 
         # Update the Q-value using the Q-learning formula
         self.q_table[state][action] += self.alpha * (reward + self.gamma * next_max - self.q_table[state][action])
+        self.numUpdated += 1
+        print(f"Q-Table updated {self.numUpdated} times")
