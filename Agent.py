@@ -1,9 +1,12 @@
 import random
 import functions as fns
+import json
+import os
+import hashlib
 
 
 class ReinforcementLearningAgent():
-    def __init__(self, board, board_ref, starting_troops, player_index, alpha=0.5, gamma=0.9, epsilon=0.3):
+    def __init__(self, board, board_ref, starting_troops, player_index, alpha=0.5, gamma=0.9, epsilon=0.3, q_table_path="q_table.json"):
         self.board = board
         self.board_ref = board_ref
         self.available_troops = starting_troops
@@ -12,7 +15,51 @@ class ReinforcementLearningAgent():
         self.gamma = gamma  # Discount factor
         self.epsilon = epsilon  # Exploration rate
         self.q_table = {}
+        self.q_table_path = q_table_path  # Path to save/load Q-table
         self.numUpdated = 0
+
+        # Attempt to load the Q-table from a file
+        self.load_q_table()
+
+    def save_q_table(self):
+        """Save the Q-table to a file."""
+        try:
+            # Convert tuple keys to strings
+            serializable_q_table = {repr(k): v for k, v in self.q_table.items()}
+            with open(self.q_table_path, "w") as f:
+                json.dump(serializable_q_table, f, indent=4)
+            print(f"Q-table saved to {self.q_table_path}")
+        except Exception as e:
+            print(f"Failed to save Q-table: {e}")
+
+    def hash_key(self, key):
+        """Convert a tuple or other complex structure into a unique hashable string."""
+        key_str = repr(key)  # Represent the key as a string
+        return hashlib.md5(key_str.encode()).hexdigest()  # Create an MD5 hash of the string
+
+    def load_q_table(self):
+        """Load the Q-table from a file, if it exists."""
+        if os.path.exists(self.q_table_path):
+            try:
+                with open(self.q_table_path, "r") as f:
+                    serialized_q_table = json.load(f)
+                    # Convert string keys back to tuples
+                    self.q_table = {eval(k): v for k, v in serialized_q_table.items()}
+                print(f"Q-table loaded from {self.q_table_path}")
+            except json.JSONDecodeError:
+                print(f"Failed to decode Q-table from {self.q_table_path}. Starting fresh.")
+                self.q_table = {}
+            except Exception as e:
+                print(f"Error loading Q-table: {e}. Starting fresh.")
+                self.q_table = {}
+        else:
+            print(f"No Q-table found at {self.q_table_path}. Starting fresh.")
+            self.q_table = {}
+
+    def unhash_key(self, hashed_key):
+        """Reverse the hashing to regenerate the original key (if needed)."""
+        # Note: Storing the original keys elsewhere is recommended if reverse mapping is required.
+        raise NotImplementedError("Key hashing is one-way. Use consistent keys.")
 
     def get_available_troops(self):
         return self.available_troops
@@ -113,4 +160,4 @@ class ReinforcementLearningAgent():
         # Update the Q-value using the Q-learning formula
         self.q_table[state][action] += self.alpha * (reward + self.gamma * next_max - self.q_table[state][action])
         self.numUpdated += 1
-        print(f"Q-Table updated {self.numUpdated} times")
+        #print(f"Q-Table updated {self.numUpdated} times")

@@ -16,7 +16,6 @@ ALPHA = 0.1
 GAMMA = 0.9
 EPSILON = 0.1
 
-
 def run_single_game(num_players):
     """Runs a single game and returns the results."""
     player_turn = 0
@@ -31,7 +30,18 @@ def run_single_game(num_players):
         player_index=0,
         alpha=ALPHA,
         gamma=GAMMA,
-        epsilon=EPSILON
+        epsilon=EPSILON,
+        q_table_path="q_table.json"
+    )
+    rl2_agent = ReinforcementLearningAgent(
+        board=board,
+        board_ref=board_ref,
+        starting_troops=starting_troop_count[num_players - 2],
+        player_index=2,
+        alpha=ALPHA,
+        gamma=GAMMA,
+        epsilon=EPSILON,
+        q_table_path="q_table2.json"
     )
     ai2 = AIPlayer(board=board, board_ref=board_ref, starting_troops=starting_troop_count[num_players - 2],
                    player_index=1,
@@ -62,12 +72,25 @@ def run_single_game(num_players):
             if player_turn == 0:  # RL agent's turn
                 state = (tuple(engine.calculate_player_troops(board, len(players))),
                          tuple(engine.calculate_players_num_territories(board, len(players))))
+                print(f"RL Agent Turn. State: {state}")
                 board = current_player.play(board, players)
                 next_state = (tuple(engine.calculate_player_troops(board, len(players))),
                               tuple(engine.calculate_players_num_territories(board, len(players))))
                 reward = engine.calculate_player_troops(board, len(players))[0] - rewards[player_turn]
+                print(f"RL Agent Reward: {reward}, Next State: {next_state}")
                 rl_agent.update_q_value(state, None, reward, next_state)
                 rewards[player_turn] = engine.calculate_player_troops(board, len(players))[0]
+            # if player_turn == 2:  # RL2 agent's turn
+            #     state = (tuple(engine.calculate_player_troops(board, len(players))),
+            #              tuple(engine.calculate_players_num_territories(board, len(players))))
+            #     print(f"RL2 Agent Turn. State: {state}")
+            #     board = current_player.play(board, players)
+            #     next_state = (tuple(engine.calculate_player_troops(board, len(players))),
+            #                   tuple(engine.calculate_players_num_territories(board, len(players))))
+            #     reward = engine.calculate_player_troops(board, len(players))[2] - rewards[player_turn]
+            #     print(f"RL2 Agent Reward: {reward}, Next State: {next_state}")
+            #     rl2_agent.update_q_value(state, None, reward, next_state)
+            #     rewards[player_turn] = engine.calculate_player_troops(board, len(players))[2]
             else:
                 board = current_player.play(board, players)
 
@@ -81,6 +104,8 @@ def run_single_game(num_players):
         else:
             player_turn = fns.increment_turn(num_players=len(players), turn=player_turn)
 
+    rl_agent.save_q_table()
+    #rl2_agent.save_q_table()
     # Determine winner
     winner = troop_state.index(max(troop_state))
     return winner
@@ -100,4 +125,4 @@ def train_agent(num_games=100, num_players=4):
 
 
 if __name__ == "__main__":
-    train_agent(num_games=100, num_players=4)  # Specify num_players
+    train_agent(num_games=50, num_players=4)  # Specify num_players
